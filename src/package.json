@@ -4,8 +4,8 @@
   "description": "my first socket.io app",
   "main": "index.js",
   "scripts": {
-      "devStart": "nodemon index.js",
-      "start": "node index.js"
+    "devStart": "nodemon index.js",
+    "start": "node index.js"
   },
   "author": "",
   "license": "ISC",

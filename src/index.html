@@ -1,10 +1,9 @@
 <!doctype html>
 <html>
-  <head>
+  <head> 
     <title>Ethan's chat</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="style.css" />
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
       body { font: 16px Helvetica, Arial; background-color: grey;}
@@ -42,6 +41,8 @@
     <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
    <script>
       $(function () {
+        // let myStorage = window.localStorage;
+        document.cookie = 'SameSite=None';
         var msgDiv = document.getElementById("message-box");
         var userList = document.getElementById('user-list');
         var socket = io();
@@ -69,6 +70,18 @@
         });
         socket.on('hide error', function()  {
             document.getElementById("overlay").style.display = "none";
+        });
+        socket.on('check cookies', () => { //create on server side
+            const locUser = localStorage.getItem('local-username');
+            const locColor = localStorage.getItem('local-color');
+            if (locUser != undefined && locColor != undefined)  {
+              socket.emit('cookies check', [locUser,locColor]); //create on server side
+            }
+            
+        });
+        socket.on('update local storage', function(localUser)  {
+             localStorage.setItem('local-username', localUser.username);
+             localStorage.setItem('local-color', localUser.color);
         });
       });
 

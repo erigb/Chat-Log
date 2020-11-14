@@ -5,7 +5,8 @@ const {
   userLeave,
   getUsers,
   changeName,
-  changeColor
+  changeColor,
+  existingUser
 } = require('./users');
 
 var messageList = []
@@ -13,14 +14,16 @@ var messageList = []
 var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
-var port = process.env.PORT || 3000;
+var port = process.env.PORT || 1709;
 
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/index.html');
 });
 
 io.on('connection', function(socket){
-    const user = userJoin(socket.id);
+  var user = userJoin(socket.id);
+    
+    io.to(socket.id).emit('check cookies');
 
     messageList.forEach(indiMessage=>{
         io.to(socket.id).emit('chat message', [formatMessage(indiMessage[0].username, indiMessage[1]),indiMessage[0].color]);
@@ -30,23 +33,32 @@ io.on('connection', function(socket){
 
     io.emit('update users', getUsers());
 
+    socket.on('cookies check', function(prevUser){ //Make
+      changeName(socket.id, prevUser[0]);
+      var newColor = prevUser[1].replace('#', '');
+      changeColor(socket.id, newColor);
+      io.emit('update users', getUsers());
+      io.to(socket.id).emit('update local storage', getCurrentUser(socket.id));
+    });
+
   socket.on('chat message', function(msg){
       const us = getCurrentUser(socket.id);
       if (msg.startsWith('/name '))  {
         io.to(socket.id).emit('hide error');
         changeName(socket.id, msg);
         io.emit('update users', getUsers());
+        io.to(socket.id).emit('update local storage', getCurrentUser(socket.id));
       }
 
       else if (msg.startsWith('/color '))  {
         io.to(socket.id).emit('hide error');
         changeColor(socket.id, msg);
         io.emit('update users', getUsers());
+        io.to(socket.id).emit('update local storage', getCurrentUser(socket.id));
       } 
 
       else if (msg.startsWith('/'))  {
         io.to(socket.id).emit('show error');
-        console.log("ERROR in command0");
       }
       else {
         io.to(socket.id).emit('hide error');
@@ -59,7 +71,7 @@ io.on('connection', function(socket){
 
   socket.on('disconnect', function(){
     io.emit('chat message', [getCurrentUser(socket.id).username + ' Has Left!', '#000000']);
-    const user = userLeave(socket.id);
+    userLeave(socket.id);
     io.emit('update users', getUsers());
 
 });  

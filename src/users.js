@@ -65,7 +65,7 @@ function makeUsername() {
 
  function changeColor(id, msg)  {
     const index = users.findIndex(user => user.id === id);
-    newMsg = msg.replace('/color ', '');
+    var newMsg = msg.replace('/color ', '');
     newMsg = newMsg.replace(' ', '');
     var regex = /^[0-9a-fA-Z]+$/;
     if (regex.test(newMsg))  {
